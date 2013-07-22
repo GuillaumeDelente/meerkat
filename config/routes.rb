@@ -53,4 +53,9 @@ Meerkat::Application.routes.draw do
   #     # (app/controllers/admin/products_controller.rb)
   #     resources :products
   #   end
+
+
+  root "jobs#index"
+  
+  resources :jobs, only: [:index]
 end
