@@ -52,3 +52,5 @@ gem 'rails_12factor', group: :production
 gem 'sucker_punch', '~> 1.0'
 
 gem 'sidekiq'
+
+gem 'nokogiri'

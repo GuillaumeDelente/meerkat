@@ -1,2 +1,7 @@
 <h1>Sidekiq testing</h1>
-<% DumbWorker.perform_async %>
+<% @proxies.each do |proxy| %>
+    <tr>
+      <td><%= proxy.ip_address %></td>
+      <td><%= proxy.port %></td>
+    </tr>
+  <% end %>
