@@ -4,11 +4,22 @@ class ProxyScraperWorker
   sidekiq_options :retry => false
 
   def perform
+    if ENV['PROXY_LIST_URL'].nil?
+      Bugsnag.notify(RuntimeError.new("PROXY_LIST_URL not set!"))
+      return
+    end
+
     doc = Nokogiri::HTML(open(ENV['PROXY_LIST_URL'])) do |config|
       config.strict.nonet
     end
     ips = doc.xpath("/html/body/div/div/table/tr/td[1 and not(@colspan)]/script/text()").to_a
     ports = doc.xpath("/html/body/div/div/table/tr/td[2]/text()").to_a
+    if ips.empty? or ports.empty?
+      Bugsnag.notify(RuntimeError.new("Proxy parsing failed"), {
+                       :content => doc,
+                     })
+      return
+    end
     ips.map! { |ip| Base64.decode64(ip.text[/\"(.*)\"/, 1]) }
     ips.zip(ports) { |ip, port| Proxy.create(ip_address: ip, port: port.text.to_i)}
   end

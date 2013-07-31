@@ -54,3 +54,5 @@ gem 'sucker_punch', '~> 1.0'
 gem 'sidekiq'
 
 gem 'nokogiri'
+
+gem 'bugsnag'
