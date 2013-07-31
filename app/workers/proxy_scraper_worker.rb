@@ -21,6 +21,7 @@ class ProxyScraperWorker
       return
     end
     ips.map! { |ip| Base64.decode64(ip.text[/\"(.*)\"/, 1]) }
+    Proxy.delete_all
     ips.zip(ports) { |ip, port| Proxy.create(ip_address: ip, port: port.text.to_i)}
   end
 end
