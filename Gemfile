@@ -56,3 +56,5 @@ gem 'sidekiq'
 gem 'nokogiri'
 
 gem 'bugsnag'
+
+gem 'devise', '~> 3.0.0.rc'

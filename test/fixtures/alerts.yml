@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  query: MyString
+  frequency: 1
+  user_id: 
+  active: false
+
+two:
+  name: MyString
+  query: MyString
+  frequency: 1
+  user_id: 
+  active: false
