@@ -27,7 +27,6 @@ class ProxyScraperWorker
     # Reset autoincrement count as it's needed by how alert workers
     # choose a proxy
     ActiveRecord::Base.connection.reset_pk_sequence!(Proxy.table_name)
-    proxies.each {|proxy_address| Proxy.create!(ip_address: proxy_address)}
-    #proxies.each {|proxy_address| Proxy.create!(ip_address: proxy_address)}
+    proxies.each {|proxy_address| Proxy.create(ip_address: proxy_address)}
   end
 end
