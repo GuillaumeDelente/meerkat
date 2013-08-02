@@ -23,7 +23,7 @@ class AlertWorker
       return 0
     end
     proxy = Proxy.find(alert_id % proxy_count + 1)
-    options = { :proxy => URI.parse("http://#{proxy.ip_address}:#{proxy.port}") }
+    options = { :proxy => proxy }
     doc = Nokogiri::HTML(open(alert.query, options)) do |config|
       config.strict.nonet
     end
@@ -31,6 +31,10 @@ class AlertWorker
   end
 
   def parse(doc)
+
+  end
+
+  def parse_test(doc)
     #ips = doc.xpath("/html/body/div/div/table/tr/td[1 and not(@colspan)]/script/text()").to_a
     ip = "failed"
     doc.css("span.ip").each do |item|

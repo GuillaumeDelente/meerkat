@@ -21,10 +21,13 @@ class ProxyScraperWorker
       return
     end
     ips.map! { |ip| Base64.decode64(ip.text[/\"(.*)\"/, 1]) }
+    proxies = ips.zip(ports).map {|ip, port| "http://#{ip}:#{port}"}
+
     Proxy.delete_all
     # Reset autoincrement count as it's needed by how alert workers
     # choose a proxy
     ActiveRecord::Base.connection.reset_pk_sequence!(Proxy.table_name)
-    ips.zip(ports) { |ip, port| Proxy.create(ip_address: ip, port: port.text.to_i)}
+    proxies.each {|proxy_address| Proxy.create!(ip_address: proxy_address)}
+    #proxies.each {|proxy_address| Proxy.create!(ip_address: proxy_address)}
   end
 end
