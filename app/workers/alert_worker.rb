@@ -24,14 +24,22 @@ class AlertWorker
     end
     proxy = Proxy.find(alert_id % proxy_count + 1)
     options = { :proxy => proxy.ip_address }
-    doc = Nokogiri::HTML(open(alert.query, options)) do |config|
-      config.strict.nonet
-    end
-    parse_test(doc)
+    doc = Nokogiri::HTML(File.open("/home/guillaume/Desktop/lbc.html"))
+#    doc = Nokogiri::HTML(open(alert.query, options)) do |config|
+#      config.strict.nonet
+#    end
+    parse(doc, alert)
   end
 
-  def parse(doc)
+  def parse(doc, alert)
+    last_ad_id = alert.last_ad_id.to_s
+    ads = doc.css('div.list-lbc a')
+    new_ads = ads.take_while {|node| /\/(\d+)\.htm/.match(node['href'])[1] != last_ad_id}
+    ids = new_ads.map {|node| /\/(\d+)\.htm/.match(node['href'])[1]}
+    return ids
 
+    date = ads.css('div.date').map {|node| node.css('div').map {|e| e.text}}
+    chronic = date.map {|e| Chronic.parse("#{e[0]} #{e[1]}")}
   end
 
   def parse_test(doc)
