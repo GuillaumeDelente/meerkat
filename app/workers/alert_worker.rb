@@ -2,7 +2,12 @@ class AlertWorker
   require 'open-uri'
   include Sidekiq::Worker
   sidekiq_options :retry => true
-  
+
+
+  def initialize
+    @date_translation = {"Aujourd'hui" => "Today", "Hier" => "Yesterday"}
+  end
+
   def perform(alert_id)
     proxy_count = Proxy.count
     if proxy_count == 0
@@ -33,13 +38,16 @@ class AlertWorker
 
   def parse(doc, alert)
     last_ad_id = alert.last_ad_id.to_s
+    last_ad_date = alert.last_ad_date
     ads = doc.css('div.list-lbc a')
     new_ads = ads.take_while {|node| /\/(\d+)\.htm/.match(node['href'])[1] != last_ad_id}
-    ids = new_ads.map {|node| /\/(\d+)\.htm/.match(node['href'])[1]}
-    return ids
-
-    date = ads.css('div.date').map {|node| node.css('div').map {|e| e.text}}
-    chronic = date.map {|e| Chronic.parse("#{e[0]} #{e[1]}")}
+    if (new_ads.size == ads.size and alert.last_ad_date != nil)
+      dates = new_ads.map {|node| node.css('div.date div').map {|e| e.text}}
+      new_dates = dates.reverse_each.drop_while { |date| Chronic.parse("#{@date_translation.fetch(date[0], date[0])} #{date[1]}") < last_ad_date }
+      new_ads = new_ads[0, new_dates.length]
+    end
+    notify_new_ads(new_ads)
+    #new_dates
   end
 
   def parse_test(doc)
@@ -49,5 +57,10 @@ class AlertWorker
       ip = item.text
     end
     ip
+  end
+
+  def notify_new_ads(new_ads)
+    ids = new_ads.map {|node| /\/(\d+)\.htm/.match(node['href'])[1]}
+    ids
   end
 end
