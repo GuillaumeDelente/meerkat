@@ -5,7 +5,7 @@ class AlertWorker
 
 
   def initialize
-    @date_translation = {"Aujourd'hui" => "Today", "Hier" => "Yesterday"}
+    Chronic.locale = :'fr-FR'
   end
 
   def perform(alert_id)
@@ -43,11 +43,11 @@ class AlertWorker
     new_ads = ads.take_while {|node| /\/(\d+)\.htm/.match(node['href'])[1] != last_ad_id}
     if (new_ads.size == ads.size and alert.last_ad_date != nil)
       dates = new_ads.map {|node| node.css('div.date div').map {|e| e.text}}
-      new_dates = dates.reverse_each.drop_while { |date| Chronic.parse("#{@date_translation.fetch(date[0], date[0])} #{date[1]}") < last_ad_date }
+      new_dates = dates.reverse_each.drop_while { |date| Chronic.parse("#{date[0]} #{date[1]}") < last_ad_date }
       new_ads = new_ads[0, new_dates.length]
     end
-    notify_new_ads(new_ads)
-    #new_dates
+    #notify_new_ads(new_ads)
+    new_dates
   end
 
   def parse_test(doc)

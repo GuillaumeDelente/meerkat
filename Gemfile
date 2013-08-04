@@ -49,8 +49,6 @@ gem 'unicorn'
 # Heroku
 gem 'rails_12factor', group: :production
 
-gem 'sucker_punch', '~> 1.0'
-
 gem 'sidekiq'
 
 gem 'nokogiri'
@@ -59,4 +57,6 @@ gem 'bugsnag'
 
 gem 'devise', '~> 3.0.0.rc'
 
-gem 'chronic'
+gem 'chronic', git: 'git://github.com/mojombo/chronic.git', branch: 'localization'
+
+gem 'chronic-l10n', git: 'git://github.com/gdelente/chronic-l10n.git', branch: 'french-language'
