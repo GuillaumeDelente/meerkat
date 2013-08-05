@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 class AlertWorker
   require 'open-uri'
   include Sidekiq::Worker
@@ -29,7 +30,7 @@ class AlertWorker
     end
     proxy = Proxy.find(alert_id % proxy_count + 1)
     options = { :proxy => proxy.ip_address }
-    doc = Nokogiri::HTML(File.open("/home/guillaume/Desktop/lbc.html"))
+    doc = Nokogiri::HTML(File.open("/home/guillaume/Desktop/lbc-empty.html"))
 #    doc = Nokogiri::HTML(open(alert.query, options)) do |config|
 #      config.strict.nonet
 #    end
@@ -40,14 +41,18 @@ class AlertWorker
     last_ad_id = alert.last_ad_id.to_s
     last_ad_date = alert.last_ad_date
     ads = doc.css('div.list-lbc a')
+    if ads.empty? and not doc.at_css('h2#result_ad_not_found').nil?
+      Bugsnag.notify(RuntimeError.new("Ad list parsing failed"), {
+                       :content => doc
+                     })
+    end
     new_ads = ads.take_while {|node| /\/(\d+)\.htm/.match(node['href'])[1] != last_ad_id}
     if (new_ads.size == ads.size and alert.last_ad_date != nil)
       dates = new_ads.map {|node| node.css('div.date div').map {|e| e.text}}
       new_dates = dates.reverse_each.drop_while { |date| Chronic.parse("#{date[0]} #{date[1]}") < last_ad_date }
       new_ads = new_ads[0, new_dates.length]
     end
-    #notify_new_ads(new_ads)
-    new_dates
+    process_new_ads(new_ads)
   end
 
   def parse_test(doc)
@@ -59,7 +64,7 @@ class AlertWorker
     ip
   end
 
-  def notify_new_ads(new_ads)
+  def process_new_ads(new_ads)
     ids = new_ads.map {|node| /\/(\d+)\.htm/.match(node['href'])[1]}
     ids
   end
