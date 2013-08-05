@@ -46,21 +46,17 @@ class AlertWorker
                        :content => doc
                      })
     end
-    last_ad_index = ads.find {|node| /\/(\d+)\.htm/.match(node['href'])[1] == last_ad_id}
+    last_ad_index = ads.find_index {|node| /\/(\d+)\.htm/.match(node['href'])[1] == last_ad_id}
     if last_ad_index
       ads = ads.slice(0, last_ad_index)
     elsif alert.last_ad_date
       # If we have a last known ad, check if it hasn't been removed
       #dates = new_ads.map {|node| node.css('div.date div').map {|e| e.text}}
-      dates = ads.css('div.date div').each_slice(2).map {|date| "#{date[0].text} #{date[1].text}"}
+      dates = get_date_from_ads ads
       older_ad_index = dates.find_index {|date| Chronic.parse(date) < last_ad_date}
-#      return [dates, Chronic.parse(dates[0]), older_ad_index]
       ads = ads.slice(0, older_ad_index) if older_ad_index
-      
-#      new_dates = dates.reverse_each.drop_while { |date| Chronic.parse("#{date[0]} #{date[1]}") < last_ad_date }
-#      new_ads = new_ads[0, new_dates.length]
     end
-    process_new_ads(ads)
+    process_new_ads(ads, alert)
   end
 
   def parse_test(doc)
@@ -72,21 +68,35 @@ class AlertWorker
     ip
   end
 
-  def process_new_ads(new_ads)
+  def process_new_ads(new_ads, alert)
     if new_ads.empty?
       return [0]
     end
     links = new_ads.map {|node| node['href']}
-    images = new_ads.map {|node| node.at_css('img')['src']}
-    dates = new_ads.map {|node| node.css('div.date div').map {|date| date.text}}
-    details_nodes = new_ads.map {|node| node.css('div.detail')}
-    titles = details_nodes.map { |node| node.at_css('div.title').text.gsub(/[^0-9A-Za-z ]/, '')}
-    prices = details_nodes.map { |node| price = node.at_css('div.price'); price.nil? ? nil : price.text}
-    locations = details_nodes.map { |node| node.at_css('div.placement').text}
+    images = new_ads.css('img').map do |node| 
+      src = node['src']
+      src =~ /\.gif$/ ? nil : src
+    end
+    dates = get_date_from_ads(new_ads)
+    details_nodes = new_ads.css('div.detail')
+    titles = details_nodes.map { |title| sanitize_if_not_nil title.at_css('div.title')}
+    prices = details_nodes.map { |price| sanitize_if_not_nil price.at_css('div.price')}
+    locations = details_nodes.map { |location| sanitize_if_not_nil location.at_css('div.placement')}
     last_ad = new_ads.first
     last_ad_id = /\/(\d+)\.htm/.match(last_ad['href'])[1]
     last_ad_date = last_ad.css('div.date div').map {|e| e.text}
-    last_ad_date = Chronic.parse("#{last_ad_date[0]} #{last_ad_date[1]}")
-    [links, dates, images, prices, titles, locations]
+    last_ad_date = Chronic.parse(dates.first)
+    alert.last_ad_date = last_ad_date
+    alert.last_ad_id = last_ad_id
+    alert.save
+    [last_ad_date, links, dates, images, prices, titles, locations]
+  end
+
+  def get_date_from_ads(ads)
+    ads.css('div.date div').each_slice(2).map {|date| "#{date[0].text} #{date[1].text}"}
+  end
+
+  def sanitize_if_not_nil(s)
+    s ? s.text.gsub(/[^[[:print:]]]/, '') : nil
   end
 end
