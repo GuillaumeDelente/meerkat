@@ -63,4 +63,6 @@ gem 'chronic-l10n', git: 'git://github.com/gdelente/chronic-l10n.git', branch: '
 
 group :development, :test do
   gem 'rspec-rails', '~> 2.0'
+  gem 'factory_girl_rails', '~> 4.2.1'
+  gem 'ffaker'
 end
