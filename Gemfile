@@ -60,3 +60,7 @@ gem 'devise', '~> 3.0.0.rc'
 gem 'chronic', git: 'git://github.com/mojombo/chronic.git', branch: 'localization'
 
 gem 'chronic-l10n', git: 'git://github.com/gdelente/chronic-l10n.git', branch: 'french-language'
+
+group :development, :test do
+  gem 'rspec-rails', '~> 2.0'
+end

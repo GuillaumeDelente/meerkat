@@ -48,7 +48,7 @@ test:
   encoding: unicode
   database: meerkat_test
   pool: 5
-  username: meerkat
+  username: guillaume
   password:
 
 production:
