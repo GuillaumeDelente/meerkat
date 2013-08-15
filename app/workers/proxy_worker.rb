@@ -23,7 +23,6 @@ class ProxyWorker
     # choose a proxy
     ActiveRecord::Base.connection.reset_pk_sequence!(Proxy.table_name)
     proxies.each {|ip, port| Proxy.create(ip: ip, port: port)}
-    ports
     #rescue
     # Bugsnag.notify(RuntimeError.new("Proxy parsing failed"), {
     #                  :content => doc,
