@@ -1,11 +1,15 @@
+require 'resolv'
+
 class Proxy < ActiveRecord::Base
-  validates :ip_address, presence: {strict: true}
+  validates :ip_address, presence: true
   validate :valid_proxy
 
   def valid_proxy
     begin
       address = URI.parse(ip_address)
-      if address.scheme.nil? or address.host.nil? or address.port.nil?
+      if (address.scheme.nil? or 
+          (Resolv::IPv4::Regex =~ address.host).nil? or
+          address.port.nil?)
         raise URI::InvalidURIError, 'Scheme, host or port missing' 
       end
     rescue URI::InvalidURIError => e
