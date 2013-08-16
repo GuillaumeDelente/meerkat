@@ -24,11 +24,10 @@ class AlertWorker
       return 0
     end
     proxy = Proxy.find(alert_id % proxy_count + 1)
-    options = { :proxy => proxy.ip_address }
-    doc = Nokogiri::HTML(File.open("/home/guillaume/Desktop/lbc.html"))
-#    doc = Nokogiri::HTML(open(alert.query, options)) do |config|
-#      config.strict.nonet
-#    end
+    options = { :proxy => proxy.address }
+    doc = Nokogiri::HTML(open(alert.query, options)) do |config|
+      config.strict.nonet
+    end
     parse(doc, alert)
   end
 
