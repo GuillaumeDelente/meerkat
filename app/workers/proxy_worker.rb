@@ -1,7 +1,7 @@
 class ProxyWorker
   require 'open-uri'
   include Sidekiq::Worker
-  sidekiq_options :retry => false, :queue => :proxies
+  sidekiq_options :retry => false, :queue => :proxy
 
   def perform
     #begin
@@ -23,6 +23,7 @@ class ProxyWorker
     # choose a proxy
     ActiveRecord::Base.connection.reset_pk_sequence!(Proxy.table_name)
     proxies.each {|ip, port| Proxy.create(ip: ip, port: port)}
+    Sidekiq::Stats.new.queues
     #rescue
     # Bugsnag.notify(RuntimeError.new("Proxy parsing failed"), {
     #                  :content => doc,

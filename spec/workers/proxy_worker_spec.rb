@@ -1,20 +1,28 @@
 # spec/workers/proxy_worker_spec.rb
 require 'spec_helper'
+require 'sidekiq/testing'
 
 describe ProxyWorker do
-  before(:all) do
+
+  def initialize
     @proxies_doc = Nokogiri::HTML(File.open(File.expand_path('../html/proxies.html', __FILE__)))
   end
 
+  before(:each) do
+    Nokogiri::HTML::Document.stub(:parse) {@proxies_doc}
+  end
+
+  it "runs on the proxy queue" do
+    expect(ProxyWorker).to be_processed_in :proxy
+  end
+
   it "puts the proxies on the database" do
-    Nokogiri::HTML::Document.should_receive(:parse).and_return(@proxies_doc)
     ProxyWorker.new.perform
     proxies = Proxy.all.map {|p| [p.ip, p.port]}
     proxies =~ proxy_list_test
   end
 
   it "sets the n proxies ids to [1,n]" do
-    Nokogiri::HTML::Document.should_receive(:parse).and_return(@proxies_doc)
     ProxyWorker.new.perform
     proxies = Proxy.all
     proxies.first.id.should == 1
