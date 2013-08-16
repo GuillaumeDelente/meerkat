@@ -2,13 +2,13 @@
 class AlertWorker
   require 'open-uri'
   include Sidekiq::Worker
-  sidekiq_options :retry => true
+  sidekiq_options :retry => true, :queue => :alerts
 
   def perform(alert_id)
     proxy_count = Proxy.count
     if proxy_count == 0
-      if Sidekiq::Queue.new("proxy").size == 0
-        ProxyScraperWorker.perform_async
+      if Sidekiq::Queue.new(:proxies).size == 0
+        ProxyWorker.perform_async
       end
       # Mark the job as failed to be retried
       return -1

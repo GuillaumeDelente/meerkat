@@ -5,7 +5,7 @@ preload_app true
 
 before_fork do |server, worker|
 
-  @sidekiq_pid ||= spawn("bundle exec sidekiq -c 2")
+  @sidekiq_pid ||= spawn("bundle exec sidekiq -q proxies,5 alerts,5 default")
   
   Signal.trap 'TERM' do
     puts 'Unicorn master intercepting TERM and sending myself QUIT instead'

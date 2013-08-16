@@ -1,7 +1,7 @@
 class ProxyWorker
   require 'open-uri'
   include Sidekiq::Worker
-  sidekiq_options :retry => false
+  sidekiq_options :retry => false, :queue => :proxies
 
   def perform
     #begin
