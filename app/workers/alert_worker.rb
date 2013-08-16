@@ -4,11 +4,6 @@ class AlertWorker
   include Sidekiq::Worker
   sidekiq_options :retry => true
 
-
-  def initialize
-    Chronic.locale = :'fr-FR'
-  end
-
   def perform(alert_id)
     proxy_count = Proxy.count
     if proxy_count == 0

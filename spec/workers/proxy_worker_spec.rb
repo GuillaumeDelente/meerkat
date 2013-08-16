@@ -13,7 +13,7 @@ describe ProxyWorker do
     proxies =~ proxy_list_test
   end
 
-  it "sets the n proxies ids to [0,n]" do
+  it "sets the n proxies ids to [1,n]" do
     Nokogiri::HTML::Document.should_receive(:parse).and_return(@proxies_doc)
     ProxyWorker.new.perform
     proxies = Proxy.all
