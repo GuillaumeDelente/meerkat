@@ -9,4 +9,4 @@
 
 # Make sure your secret_key_base is kept private
 # if you're sharing your code publicly.
-Meerkat::Application.config.secret_key_base = '509940057af0e7faaff8747f31d1d7d954f2cf6ff01057967995dd837799264daa1e825c0fe17e8c91cbb82ef176dda052e577b3ef094a46ed8b282884668fb7'
+Meerkat::Application.config.secret_key_base = ENV['SECRET_TOKEN']
