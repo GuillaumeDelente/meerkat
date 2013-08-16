@@ -1,1 +1,1 @@
-Chronic.locale = 'fr-FR'
+Chronic.locale = :'fr-FR'
