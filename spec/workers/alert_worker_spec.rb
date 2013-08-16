@@ -4,15 +4,6 @@ require 'sidekiq/testing'
 
 describe AlertWorker do
 
-  def initialize
-    @alertes_doc = Nokogiri::HTML(File.open(File.expand_path('../html/alertes.html', __FILE__)))
-  end
-
-  before(:each) do
-    Nokogiri::HTML::Document.stub(:parse) {@alertes_doc}
-  end
-
-
   it "runs in the alert queue" do
     expect(AlertWorker).to be_processed_in :alert
   end
@@ -36,27 +27,25 @@ describe AlertWorker do
     before(:each) do
       ActiveRecord::Base.connection.reset_pk_sequence!(Proxy.table_name)
       FactoryGirl.create_list(:proxy, 20)
+      @worker = AlertWorker.new
     end
 
     it "doesn't retry the job if the alert is not found" do
-      AlertWorker.new.perform(0).should == 0
+      @worker.perform(0).should == 0
       expect(AlertWorker).to have(0).jobs
     end
     
     it "doesn't process the alert if unactive" do
       id = FactoryGirl.create(:alert, :active => false).id
       Nokogiri::HTML::Document.should_not_receive(:parse)
-      AlertWorker.new.perform(id)
+      @worker.perform(id)
     end
     
     it "process the alert if active" do
       id = FactoryGirl.create(:alert).id
-#      Nokogiri::HTML::Document.should_receive(:parse)
-      worker = AlertWorker.new
-#      worker.should_receive(:open)
-      worker.stub(:open)
-      worker.perform(id)
-      
+      Nokogiri::HTML::Document.should_receive(:parse).and_call_original
+      @worker.stub(:open) { File.open(File.expand_path('../html/alerts.html', __FILE__)) }
+      @worker.perform(id)
     end
   end
 end
